@@ -61,6 +61,11 @@ class PasswordPolicyValidatorsTestCase(unittest.TestCase):
         # Test badly encoded password
         self.validation_errors_checker(b'\xff\xff', 'Invalid password.')
 
+    def test_password_unicode_normalization(self):
+        """ Tests that validate_password normalizes passwords """
+        #TODO @Dillon will do this test since it relates to validation.
+        pass
+
     @data(
         ([create_validator_config('util.password_policy_validators.MinimumLengthValidator', {'min_length': 2})],
             'at least 2 characters.'),

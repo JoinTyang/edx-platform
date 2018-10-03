@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import logging
 import unicodedata
 
-from django.conf import settings
 from django.contrib.auth.password_validation import (
     get_default_password_validators,
     validate_password as django_validate_password,
@@ -48,6 +47,14 @@ def create_validator_config(name, options={}):
         return {'NAME': name, 'OPTIONS': options}
 
     return {'NAME': name}
+
+
+def normalize_password(password):
+    """
+    Normalize all passwords to 'NFKC' across the platform to prevent mismatched hash strings when comparing entered
+    passwords on login. See LEARNER-4283 for more context.
+    """
+    return unicodedata.normalize('NFKC', password)
 
 
 def password_validators_instruction_texts():
@@ -111,6 +118,8 @@ def validate_password(password, user=None):
     """
     if not isinstance(password, text_type):
         try:
+            if PASSWORD_UNICODE_NORMALIZE_FLAG.is_enabled():
+                password = normalize_password(password)
             # some checks rely on unicode semantics (e.g. length)
             password = text_type(password, encoding='utf8')
         except UnicodeDecodeError:
